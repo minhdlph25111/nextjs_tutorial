@@ -2,6 +2,7 @@
 
 import React, {useMemo, useState} from "react";
 import usersData from "@/datas/data";
+import {DeleteOutlined, EditOutlined} from "@ant-design/icons";
 
 interface User {
     id: string;
@@ -73,6 +74,9 @@ const HomePage: React.FC = () => {
                         <th className="px-4 py-3 text-center text-sm font-semibold border">
                             Status
                         </th>
+                        <th className="px-4 py-3 text-center text-sm font-semibold border">
+                            Actions
+                        </th>
                     </tr>
                     </thead>
 
@@ -100,12 +104,24 @@ const HomePage: React.FC = () => {
                         className={`px-2 py-1 rounded text-xs font-medium
                         ${
                             user.isActive
-                                ? "bg-green-100 text-green-700"
-                                : "bg-red-100 text-red-600"
+                                ? " text-green-700"
+                                : " text-red-600"
                         }`}
                     >
                       {user.isActive ? "Active" : "Inactive"}
                     </span>
+                                </td>
+                                <td className="px-4 py-2 justify-center flex border gap-2">
+                                   <button
+                                       className='bg-green-100 text-green-600 rounded-sm pl-2 pr-2
+                                       cursor-pointer hover:bg-green-200'
+                                   >
+                                       <EditOutlined />
+                                   </button>
+                                    <button className='bg-red-100 text-red-600 p-1 rounded-sm pl-2 pr-2
+                                    cursor-pointer hover:bg-red-200'>
+                                        <DeleteOutlined />
+                                    </button>
                                 </td>
                             </tr>
                         ))

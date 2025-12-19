@@ -96,16 +96,16 @@ const HomePage: React.FC = () => {
                                     {user.userName}
                                 </td>
                                 <td className="px-4 py-2 text-center border">
-                    <span
-                        className={`px-2 py-1 rounded text-xs font-medium
-                        ${
-                            user.isActive
-                                ? "bg-green-100 text-green-700"
-                                : "bg-red-100 text-red-600"
-                        }`}
-                    >
-                      {user.isActive ? "Active" : "Inactive"}
-                    </span>
+                                     <span
+                                         className={`px-2 py-1 rounded text-xs font-medium
+                                         ${
+                                             user.isActive
+                                                 ? "bg-green-100 text-green-700"
+                                                 : "bg-red-100 text-red-600"
+                                         }`}
+                                     >
+                                        {user.isActive ? "Active" : "Inactive"}
+                                     </span>
                                 </td>
                             </tr>
                         ))

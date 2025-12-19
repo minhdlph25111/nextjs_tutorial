@@ -32,12 +32,15 @@ const AdminLayout: React.FC<Props> = ({ children }) => {
             id : 3,
             label : 'Calculator',
             path: '/calculator'
+        },{
+            id : 4,
+            label : 'Settings',
+            path: '/settings'
         }
     ];
 
     return (
         <div className="min-h-screen bg-gray-100">
-            {/* Header */}
             <div
                 className="sticky top-0 z-20 h-16 bg-blue-950 px-6"
                 style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}
@@ -59,7 +62,6 @@ const AdminLayout: React.FC<Props> = ({ children }) => {
             </div>
 
             <div className="flex">
-                {/* Sidebar */}
                 {sidebarOpen && (
                     <aside
                         className="w-64 bg-blue-900 text-white min-h-[calc(100vh-4rem)] sticky top-16 "
@@ -88,8 +90,6 @@ const AdminLayout: React.FC<Props> = ({ children }) => {
                         </nav>
                     </aside>
                 )}
-
-                {/* Content */}
                 <main className="flex-1 p-2">
                     <div
                         className=" p-2 min-h-[calc(100vh-7rem)]"

@@ -1,11 +1,11 @@
-'use client'
-import React from "react";
+import { SignupForm } from "@/components/signup-form"
 
-const RegisterPage : React.FC = () => {
-    return (
-        <div className="bg-white rounded-xl shadow-lg p-8">
-            this is the register page.
-        </div>
-    );
-};
-export default RegisterPage;
+export default function Page() {
+  return (
+    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
+      <div className="w-full max-w-sm">
+        <SignupForm />
+      </div>
+    </div>
+  )
+}

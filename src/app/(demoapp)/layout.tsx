@@ -65,7 +65,7 @@ const AdminLayout: React.FC<Props> = ({ children }) => {
                 {sidebarOpen && (
                     <aside
                         className="w-64 bg-blue-900 text-white min-h-[calc(100vh-4rem)] sticky top-16 "
-                        style={{width : '320px'}}
+                        style={{width : '250px'}}
                     >
                         <nav className="p-4 space-y-1 gap-2 flex flex-col" >
                             {menuItems.map((item) => {

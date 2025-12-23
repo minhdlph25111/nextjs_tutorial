@@ -13,37 +13,34 @@ import {
     TabsList,
     TabsTrigger,
 } from "@/components/ui/tabs"
-import TableContent from "@/app/(demoapp)/home/TableContent";
-import KanbanContent from "@/app/(demoapp)/home/KanbanContent";
 
-const HomePage: React.FC = () => {
+const ProfilePage: React.FC = () => {
     return (
         <div className="space-y-6">
             <div className="flex w-full max-w flex-col gap-6">
                 <Tabs defaultValue="account">
                     <TabsList>
-                        <TabsTrigger value="account">Table</TabsTrigger>
-                        <TabsTrigger value="kanban">Kanban</TabsTrigger>
+                        <TabsTrigger value="profile" className='cursor-pointer'>Profile</TabsTrigger>
+                        <TabsTrigger value="change-password" className='cursor-pointer'>Change password</TabsTrigger>
                     </TabsList>
-                    <TabsContent value="account">
+                    <TabsContent value="profile">
                         <Card className='flex-grow'>
                             <CardHeader>
-                                <CardTitle>Account</CardTitle>
+                                <CardTitle>Profile</CardTitle>
                             </CardHeader>
                             <CardContent className="grid gap-6">
-                            {/*    Table content*/}
-                                <TableContent />
+                                {/*Profile content*/}
                             </CardContent>
                         </Card>
                     </TabsContent>
-                    <TabsContent value="kanban">
+                    <TabsContent value="change-password">
                         <Card>
                             <CardHeader>
-                                <CardTitle>Password</CardTitle>
+                                <CardTitle>Change password</CardTitle>
                             </CardHeader>
                             <CardContent className="grid gap-6">
                                 <div className="grid gap-3">
-                                   <KanbanContent />
+                                    Kanban content
                                 </div>
                             </CardContent>
                         </Card>
@@ -54,4 +51,4 @@ const HomePage: React.FC = () => {
     );
 };
 
-export default HomePage;
+export default ProfilePage;

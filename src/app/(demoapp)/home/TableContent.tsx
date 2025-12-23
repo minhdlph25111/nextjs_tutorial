@@ -2,35 +2,19 @@
 import React, {useMemo, useState} from "react";
 import usersData from "@/datas/data";
 import {Input} from "@/components/ui/input";
-import {Button} from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+
 import {
     Table,
     TableBody,
     TableCell,
-    TableFooter,
     TableHead,
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog"
 import {Search, Pencil, Trash2} from "lucide-react";
-import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectLabel,
-    SelectTrigger,
-    SelectValue
-} from "@/components/ui/select";
+import UserDialog, {UserFormData} from "@/app/(demoapp)/home/modal-custom";
+import PaginationCustom from "@/app/(demoapp)/home/pagination-custom";
+import {Button} from "@/components/ui/button";
 
 interface User {
     id: string;
@@ -43,65 +27,86 @@ interface User {
 }
 
 const TableContent: React.FC = () => {
+    // State management
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [formStatus, setFormStatus] = useState<string>("");
+    const [users, setUsers] = useState<User[]>(usersData);
 
+    // PaginationCustom state
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
+
+    // Filter users based on search term
     const filteredUsers = useMemo(() => {
-        return usersData.filter((user: User) =>
+        return users.filter((user: User) =>
             `${user.firstName} ${user.lastName} ${user.email} ${user.userName}`
                 .toLowerCase()
                 .includes(searchTerm.toLowerCase())
         );
-    }, [searchTerm]);
+    }, [searchTerm, users]);
 
+    // Calculate pagination data
+    const totalItems = filteredUsers.length;
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+    // Get current page users
+    const currentUsers = useMemo(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        return filteredUsers.slice(startIndex, endIndex);
+    }, [filteredUsers, currentPage, itemsPerPage]);
+
+    // Handlers
     const handleEditClick = (user: User) => {
         setSelectedUser(user);
-        setFormStatus(user.isActive ? "active" : "inactive");
         setIsDialogOpen(true);
     };
 
-    const handleDialogSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        const formData = new FormData(e.currentTarget);
-
-        const userData = {
-            firstName: formData.get("firstName") as string,
-            lastName: formData.get("lastName") as string,
-            email: formData.get("email") as string,
-            userName: formData.get("userName") as string,
-            isActive: formStatus === "active"
+    const handleDialogSubmit = (formData: UserFormData) => {
+        const userData: User = {
+            id: formData.id || `user-${Date.now()}`,
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            email: formData.email,
+            userName: formData.userName,
+            password: selectedUser?.password || "default123",
+            isActive: formData.isActive
         };
 
-        console.log("User data:", userData);
-        console.log("Selected user ID:", selectedUser?.id);
         if (selectedUser) {
-            console.log("Updating user:", selectedUser.id);
+            // Update user
+            setUsers(prevUsers =>
+                prevUsers.map(user =>
+                    user.id === selectedUser.id ? userData : user
+                )
+            );
         } else {
-            console.log("Creating new user");
+            // Add new user
+            setUsers(prevUsers => [...prevUsers, userData]);
         }
 
-        setIsDialogOpen(false);
         setSelectedUser(null);
-        setFormStatus("");
     };
 
     const handleDeleteClick = (user: User) => {
         if (window.confirm(`Are you sure you want to delete ${user.firstName} ${user.lastName}?`)) {
-            usersData.filter((userItem: User) => user.id !== userItem.id);
-            console.log("Deleting user:", user.id);
+            setUsers(prevUsers => prevUsers.filter(userItem => user.id !== userItem.id));
         }
     };
 
     const handleAddUser = () => {
         setSelectedUser(null);
-        setFormStatus("active");
         setIsDialogOpen(true);
     };
 
-    const handleStatusChange = (value: string) => {
-        setFormStatus(value);
+    const handlePageChange = (page: number) => {
+        setCurrentPage(Math.max(1, Math.min(page, totalPages)));
+    };
+
+    const handleItemsPerPageChange = (value: number) => {
+        setItemsPerPage(value);
+        setCurrentPage(1);
     };
 
     return (
@@ -109,8 +114,8 @@ const TableContent: React.FC = () => {
             {/* Search and Add section */}
             <div className="flex items-center justify-between gap-4 mb-4 p-4 bg-white rounded-lg border">
                 <div className="flex gap-2 flex-1 max-w-md">
-                    <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                    <div className="relative flex gap-2 flex-1 items-center">
+                        <Search className="left-3 items-center flextext-gray-400 h-4 w-4" />
                         <Input
                             type="text"
                             placeholder="Search user..."
@@ -129,60 +134,64 @@ const TableContent: React.FC = () => {
             </div>
 
             {/* Table section */}
-            <div className="flex-1 overflow-hidden">
-                <div className="h-full overflow-auto">
+            <div className="flex-1 overflow-hidden flex flex-col">
+                {/* Table content */}
+                <div className="flex-1 overflow-auto">
                     <Table>
                         <TableHeader className="sticky top-0 bg-white z-10">
-                            <TableRow>
-                                <TableHead className="w-[80px]">STT</TableHead>
-                                <TableHead>Name</TableHead>
-                                <TableHead>Email</TableHead>
-                                <TableHead>Username</TableHead>
-                                <TableHead className="w-[100px]">Status</TableHead>
-                                <TableHead className="w-[180px]">Options</TableHead>
+                            <TableRow >
+                                <TableHead className="w-[80px] font-bold">STT</TableHead>
+                                <TableHead className='font-bold'>Name</TableHead>
+                                <TableHead className='font-bold'>Email</TableHead>
+                                <TableHead className='font-bold'>Username</TableHead>
+                                <TableHead className="w-[100px] font-bold">Status</TableHead>
+                                <TableHead className="w-[180px] font-bold">Options</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {filteredUsers.length > 0 ? (
-                                filteredUsers.map((user: User, index: number) => (
-                                    <TableRow key={user.id} className="hover:bg-gray-50">
-                                        <TableCell className="font-medium">{index + 1}</TableCell>
-                                        <TableCell>{user.firstName} {user.lastName}</TableCell>
-                                        <TableCell>{user.email}</TableCell>
-                                        <TableCell>{user.userName}</TableCell>
-                                        <TableCell>
-                                            <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
-                                                user.isActive
-                                                    ? "bg-green-100 text-green-700"
-                                                    : "bg-red-100 text-red-600"
-                                            }`}>
-                                                {user.isActive ? "Active" : "Inactive"}
-                                            </span>
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex gap-2">
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => handleEditClick(user)}
-                                                    className="h-8 px-3"
-                                                >
-                                                    <Pencil className="h-3.5 w-3.5 mr-1" />
-                                                    Edit
-                                                </Button>
-                                                <Button
-                                                    variant="destructive"
-                                                    size="sm"
-                                                    onClick={() => handleDeleteClick(user)}
-                                                    className="h-8 px-3"
-                                                >
-                                                    <Trash2 className="h-3.5 w-3.5 mr-1" />
-                                                    Remove
-                                                </Button>
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
+                            {currentUsers.length > 0 ? (
+                                currentUsers.map((user: User, index: number) => {
+                                    const globalIndex = (currentPage - 1) * itemsPerPage + index + 1;
+                                    return (
+                                        <TableRow key={user.id} className="hover:bg-gray-50">
+                                            <TableCell className="font-medium">{globalIndex}</TableCell>
+                                            <TableCell>{user.firstName} {user.lastName}</TableCell>
+                                            <TableCell>{user.email}</TableCell>
+                                            <TableCell>{user.userName}</TableCell>
+                                            <TableCell>
+                                                <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
+                                                    user.isActive
+                                                        ? "bg-green-100 text-green-700"
+                                                        : "bg-red-100 text-red-600"
+                                                }`}>
+                                                    {user.isActive ? "Active" : "Inactive"}
+                                                </span>
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="flex gap-2">
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => handleEditClick(user)}
+                                                        className="h-8 px-3 text-green-600 bg-green-100 hover:bg-green-200 hover:text-green-600"
+                                                    >
+                                                        <Pencil className="h-3.5 w-3.5 mr-1" />
+                                                        Edit
+                                                    </Button>
+                                                    <Button
+                                                        variant="destructive"
+                                                        size="sm"
+                                                        onClick={() => handleDeleteClick(user)}
+                                                        className="h-8 px-3 hover:text-red-600 hover:bg-red-200 bg-red-100 text-red-600 "
+                                                    >
+                                                        <Trash2 className="h-3.5 w-3.5 mr-1" />
+                                                        Remove
+                                                    </Button>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })
                             ) : (
                                 <TableRow>
                                     <TableCell colSpan={6} className="text-center py-8 text-gray-500">
@@ -191,98 +200,30 @@ const TableContent: React.FC = () => {
                                 </TableRow>
                             )}
                         </TableBody>
-                        <TableFooter>
-                            <TableRow>
-                                <TableCell colSpan={6} className="text-center py-3 text-sm text-gray-500">
-                                    Showing {filteredUsers.length} of {usersData.length} users
-                                </TableCell>
-                            </TableRow>
-                        </TableFooter>
                     </Table>
                 </div>
+
+                {/* PaginationCustom component */}
+                <PaginationCustom
+                    currentPage={currentPage}
+                    totalItems={totalItems}
+                    itemsPerPage={itemsPerPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                    onItemsPerPageChange={handleItemsPerPageChange}
+                    className="sticky bottom-0"
+                />
             </div>
 
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
-                        <DialogTitle>
-                            {selectedUser ? "Edit User" : "Add New User"}
-                        </DialogTitle>
-                    </DialogHeader>
-                    <form onSubmit={handleDialogSubmit}>
-                        <div className="grid gap-4 py-4 mb-4">
-                            <div className="grid gap-3">
-                                <Label htmlFor="firstName">First Name</Label>
-                                <Input
-                                    id="firstName"
-                                    name="firstName"
-                                    defaultValue={selectedUser?.firstName || ""}
-                                    required
-                                />
-                            </div>
-                            <div className="grid gap-3">
-                                <Label htmlFor="lastName">Last Name</Label>
-                                <Input
-                                    id="lastName"
-                                    name="lastName"
-                                    defaultValue={selectedUser?.lastName || ""}
-                                    required
-                                />
-                            </div>
-                            <div className="grid gap-3">
-                                <Label htmlFor="email">Email</Label>
-                                <Input
-                                    id="email"
-                                    name="email"
-                                    type="email"
-                                    defaultValue={selectedUser?.email || ""}
-                                    required
-                                />
-                            </div>
-                            <div className="grid gap-3">
-                                <Label htmlFor="userName">Username</Label>
-                                <Input
-                                    id="userName"
-                                    name="userName"
-                                    defaultValue={selectedUser?.userName || ""}
-                                    required
-                                />
-                            </div>
-                            <div className="grid gap-3">
-                                <Label htmlFor="status">Status</Label>
-                                <Select
-                                    value={formStatus}
-                                    onValueChange={handleStatusChange}
-                                    name="status"
-                                >
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="Select status" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectGroup>
-                                            <SelectLabel>Status</SelectLabel>
-                                            <SelectItem value="active">Active</SelectItem>
-                                            <SelectItem value="inactive">Inactive</SelectItem>
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-                        <DialogFooter>
-                            <DialogClose asChild>
-                                <Button type="button" variant="outline">
-                                    Cancel
-                                </Button>
-                            </DialogClose>
-                            <Button type="submit">
-                                {selectedUser ? "Update" : "Create"}
-                            </Button>
-                        </DialogFooter>
-                    </form>
-                </DialogContent>
-            </Dialog>
+            {/* Dialog component */}
+            <UserDialog
+                open={isDialogOpen}
+                onOpenChange={setIsDialogOpen}
+                user={selectedUser}
+                onSubmit={handleDialogSubmit}
+            />
         </div>
-    )
+    );
 };
 
 export default TableContent;

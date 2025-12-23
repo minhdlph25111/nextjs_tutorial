@@ -36,8 +36,14 @@ const AdminLayout: React.FC<Props> = ({ children }) => {
             id : 4,
             label : 'Settings',
             path: '/settings'
+        },{
+            id : 5,
+            label : 'Profile',
+            path: '/profile'
         }
     ];
+
+
 
     return (
         <div className="min-h-screen bg-gray-100">
@@ -79,7 +85,7 @@ const AdminLayout: React.FC<Props> = ({ children }) => {
                                             flex items-center gap-3 px-4 py-2 rounded-md transition
                                             ${isActive
                                             ? 'bg-blue-950'
-                                            : 'hover:bg-blue-900'}
+                                            : 'hover:bg-blue-800'}
                                                 `}
                                     >
                                         {item.icon}

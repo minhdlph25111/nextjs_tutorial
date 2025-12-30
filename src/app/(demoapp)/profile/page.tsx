@@ -18,7 +18,7 @@ const ProfilePage: React.FC = () => {
     return (
         <div className="space-y-6">
             <div className="flex w-full max-w flex-col gap-6">
-                <Tabs defaultValue="account">
+                <Tabs defaultValue="profile">
                     <TabsList>
                         <TabsTrigger value="profile" className='cursor-pointer'>Profile</TabsTrigger>
                         <TabsTrigger value="change-password" className='cursor-pointer'>Change password</TabsTrigger>

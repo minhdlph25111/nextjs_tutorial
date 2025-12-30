@@ -53,9 +53,9 @@ const AdminLayout: React.FC<Props> = ({ children }) => {
             >
                 <button
                     onClick={() => setSidebarOpen(!sidebarOpen)}
-                    className="text-white text-xl font-bold mr-4 hover:opacity-80 cursor-pointer"
+                    className="text-white text-xl font-bold mr-4 hover:opacity-80 cursor-pointer h-10 w-10 hover:bg-blue-950"
                 >
-                    -
+                    =
                 </button>
 
                 <h1 className="text-white text-xl font-semibold flex-1 text-center">

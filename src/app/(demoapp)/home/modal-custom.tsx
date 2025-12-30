@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState } from "react";
+import React, {useEffect, useState} from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -48,12 +48,12 @@ export interface UserFormData {
 }
 
 const UserDialog: React.FC<UserDialogProps> = ({open, onOpenChange, user, onSubmit}) => {
-    const [formStatus, setFormStatus] = useState<string>("");
 
-    // Reset form khi mở dialog
+    const [formStatus, setFormStatus] = useState("");
+
     useEffect(() => {
         if (open) {
-            setFormStatus(user?.isActive ? "active" : "active");
+            setFormStatus(user?.isActive ? "active" : "inactive"); //eslint-disable-line
         }
     }, [open, user]);
 

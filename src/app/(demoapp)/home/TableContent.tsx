@@ -27,6 +27,7 @@ interface User {
 }
 
 const TableContent: React.FC = () => {
+
     // State management
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -139,7 +140,7 @@ const TableContent: React.FC = () => {
                 <div className="flex-1 overflow-auto">
                     <Table>
                         <TableHeader className="sticky top-0 bg-white z-10">
-                            <TableRow >
+                            <TableRow className=''>
                                 <TableHead className="w-[80px] font-bold">STT</TableHead>
                                 <TableHead className='font-bold'>Name</TableHead>
                                 <TableHead className='font-bold'>Email</TableHead>
@@ -182,7 +183,7 @@ const TableContent: React.FC = () => {
                                                         variant="destructive"
                                                         size="sm"
                                                         onClick={() => handleDeleteClick(user)}
-                                                        className="h-8 px-3 hover:text-red-600 hover:bg-red-200 bg-red-100 text-red-600 "
+                                                        className="h-8 px-3 hover:text-red-600 hover:bg-red-200 bg-red-100 text-red-600"
                                                     >
                                                         <Trash2 className="h-3.5 w-3.5 mr-1" />
                                                         Remove

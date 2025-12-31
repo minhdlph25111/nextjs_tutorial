@@ -1,5 +1,5 @@
 'use client';
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -9,6 +9,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 
 export interface DataItemlist {
     id: number;
@@ -25,51 +26,88 @@ interface EditItemModalProps {
 }
 
 const ModalItemTodolist: React.FC<EditItemModalProps> = ({
-                                                         open,
-                                                         item,
-                                                         onClose,
-                                                         onSave,
-                                                     }) => {
+                                                             open,
+                                                             item,
+                                                             onClose,
+                                                             onSave,
+                                                         }) => {
+    const [formData, setFormData] = useState<DataItemlist>({
+        id: 0,
+        title: "",
+        content: "",
+        status: false,
+    });
 
-    if (!item) return null;
+    useEffect(() => {
+        if (item) {
+            setFormData(item); // eslint-disable-line
+        } else {
+            setFormData({
+                id: Date.now(),
+                title: "",
+                content: "",
+                status: false,
+            });
+        }
+    }, [item, open]);
+
+    const handleSubmit = () => {
+        if (formData.title.trim()) {
+            onSave(formData);
+            onClose();
+        }
+    };
 
     return (
         <Dialog open={open} onOpenChange={onClose}>
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                    <DialogTitle>Edit item</DialogTitle>
+                    <DialogTitle>
+                        {item ? "Chỉnh sửa công việc" : "Thêm công việc mới"}
+                    </DialogTitle>
                 </DialogHeader>
 
-                <div className="space-y-4">
-                    <Input
-                        value={item.title}
-                        placeholder="Title"
-                        onChange={(e) =>
-                            onSave({ ...item, title: e.target.value })
-                        }
-                    />
+                <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="title">Tiêu đề *</Label>
+                        <Input
+                            id="title"
+                            value={formData.title}
+                            placeholder="Nhập tiêu đề..."
+                            onChange={(e) =>
+                                setFormData({
+                                    ...formData,
+                                    title: e.target.value,
+                                })
+                            }
+                        />
+                    </div>
 
-                    <Input
-                        value={item.content}
-                        placeholder="Content"
-                        onChange={(e) =>
-                            onSave({ ...item, content: e.target.value })
-                        }
-                    />
+                    <div className="space-y-2">
+                        <Label htmlFor="content">Nội dung</Label>
+                        <Input
+                            id="content"
+                            value={formData.content}
+                            placeholder="Nhập nội dung..."
+                            onChange={(e) =>
+                                setFormData({
+                                    ...formData,
+                                    content: e.target.value,
+                                })
+                            }
+                        />
+                    </div>
                 </div>
 
-                <DialogFooter className="flex justify-end gap-2">
-                    <Button
-                        variant="outline"
-                        onClick={onClose}
-                    >
-                        Cancel
+                <DialogFooter className="flex gap-2">
+                    <Button variant="outline" onClick={onClose}>
+                        Hủy
                     </Button>
                     <Button
-                        onClick={() => onSave(item)}
-                        disabled={!item.title.trim()}
+                        onClick={handleSubmit}
+                        disabled={!formData.title.trim()}
                     >
-                        Save
+                        {item ? "Lưu thay đổi" : "Thêm mới"}
                     </Button>
                 </DialogFooter>
             </DialogContent>

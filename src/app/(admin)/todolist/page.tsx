@@ -1,162 +1,179 @@
-'use client'
-import React, {useMemo, useState} from "react";
-import {dataTodoList} from "@/datas/dataTodolist";
-import {Button} from "@/components/ui/button";
-import {Input} from "@/components/ui/input";
-import {SearchOutlined} from "@ant-design/icons";
-import ModalTodolist from "@/app/(admin)/todolist/modal_custom";
+'use client';
+import React, { useEffect, useMemo, useState } from "react";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks/hooks";
+import {
+    setTodos,
+    setSearchText,
+    openEditModal,
+    closeModal,
+    updateTodo,
+    removeTodo,
+    toggleStatus,
+    clearAll, addTodo, DataTodolist,
+} from "@/redux/reducers/todolist.slice";
+import { dataTodoList } from "@/datas/dataTodolist";
+import ModalTodolist from "./modal_custom";
+import { Search } from "lucide-react"; // Thay thế SearchOutlined từ antd
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
-interface DataTodolist {
-    id: number;
-    title: string;
-    content: string;
-    status: boolean;
-}
+const TodoListPage = () => {
+    const dispatch = useAppDispatch();
+    const { list, searchText, selectedItem, isModalOpen } =
+        useAppSelector((state) => state.todo);
 
-const TodoListPage: React.FC = () => {
+    useEffect(() => {
+        dispatch(setTodos(dataTodoList));
+    }, [dispatch]);
 
-    const [todoList, setTodoList] = useState<DataTodolist[]>(dataTodoList);
-    const [searchText, setSearchText] = useState<string>("");
-    const [itemSelected, setItemSelected] = useState<DataTodolist | null >(null);
-    const [openDialog, setOpenDialog] = useState<boolean>(false);
+    const filteredTodoList = useMemo(
+        () =>
+            list.filter((item) =>
+                item.title.toLowerCase().includes(searchText.toLowerCase())
+            ),
+        [list, searchText]
+    );
 
-    const filteredTodoList = useMemo(() =>
-            todoList.filter((todoListItem: DataTodolist) =>
-                todoListItem.title.toLowerCase().includes(searchText.toLowerCase()))
-        , [todoList, searchText]);
-
-    const onRemove = (item: DataTodolist) => {
-        const confirm = window.confirm(`Are you sure you want to remove this item ${item?.title}?`);
-        if (confirm) {
-            const dataRemoved = todoList.filter(
-                (itemRemoved: DataTodolist) => item.id !== itemRemoved.id
-            );
-            setTodoList(dataRemoved);
-            alert(`Đã xóa item ${item.title}`);
-        }else {
-            return;
+    const handleSave = (item: DataTodolist) => {
+        if (selectedItem) {
+            dispatch(updateTodo(item));
+        } else {
+            dispatch(addTodo({
+                ...item,
+                id: Date.now(),
+            }));
         }
     };
-
-    const onChangeStatus = (item : DataTodolist)=> {
-        const confirm = window.confirm("Are you sure you want to update this item?");
-        if(confirm){
-            const dataChangeStatus = todoList.map((itemDataChangeStatus) =>
-                item.id === itemDataChangeStatus.id ? { ...itemDataChangeStatus, status : !item.status } : itemDataChangeStatus
-            );
-            setTodoList(dataChangeStatus);
-            alert("Successfully updated the item");
-        }
-    };
-
-    const onEdit = (item : DataTodolist) => {
-        setItemSelected(item);
-        setOpenDialog(true);
-    };
-
-    const onUpdate = () => {
-        if (!itemSelected) return;
-        const dataUpdate = todoList.map(
-            (item: DataTodolist) => item.id === itemSelected.id ? itemSelected : item
-        );
-        setTodoList(dataUpdate);
-        closeModal();
-    };
-
-    const closeModal = () => {
-        setOpenDialog(false);
-        setItemSelected(null);
-    };
-
-
 
     return (
-        <div className='bg-white shadow-lg p-4 md:p-6 flex flex-col gap-4 justify-center m-auto items-center w-2xl'>
-            <div
-                className='flex items-center justify-center w-full gap-2 rounded-lg border border-gray-200 p-2 container'>
-                <SearchOutlined/>
-                <Input
-                    className='text-black flex justify-center items-center p-4 w-full pl-10'
-                    onChange={(e) => setSearchText(e.target.value)}
-                    value={searchText}
-                    placeholder='Search...'
-                />
-                <Button
-                    onClick={() => setTodoList([])}
-                >
-                    Clear All
-                </Button>
-            </div>
-            <Button
-                className='bg-green-700 text-white hover:bg-green-800'
-            >
-                Add New Item
-            </Button>
-            {
-                filteredTodoList.map((item: DataTodolist, idx: number) =>
-                    <div className=" container border p-4 rounded-lg bg-gray-200" key={item.id}>
-                        <div className="flex justify-between items-start">
-                            <div>
-                                <span className="text-gray-500 text-sm">STT: {idx + 1}</span>
-                                <h3 className="text-lg font-semibold text-gray-800 mt-1">
-                                    {item.title}
-                                </h3>
-                            </div>
-                            <div className="flex gap-2">
-                                <Button
-                                    onClick={() => onEdit(item)}
-                                    className="h-8 px-3 text-blue-600 bg-blue-100 hover:bg-blue-200"
-                                >
-                                    Sửa
-                                </Button>
-                                <Button
-                                    onClick={() => onRemove(item)}
-                                    className="h-8 px-3 text-red-600 bg-red-100 hover:bg-red-200"
-                                >
-                                    Xóa
-                                </Button>
-                            </div>
+        <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-4 md:p-6">
+            <div className="max-w-4xl mx-auto">
+                <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8 flex flex-col gap-6">
+                    <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+                        <div className="relative w-full md:w-auto flex-1 max-w-2xl">
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                            <Input
+                                className="pl-10 pr-4 py-2 w-full"
+                                placeholder="Tìm kiếm công việc..."
+                                value={searchText}
+                                onChange={(e) => dispatch(setSearchText(e.target.value))}
+                            />
                         </div>
 
-                        <div className="space-y-2">
-                            <div>
-                                <span className="font-medium">Nội dung:</span>
-                                <p className="text-gray-600 mt-1">{item.content}</p>
-                            </div>
-
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <span className="font-medium">Trạng thái:</span>
-                                    <span className={`px-2 py-1 rounded-lg text-sm font-medium ${
-                                        item.status
-                                            ? 'bg-green-100 text-green-800'
-                                            : 'bg-red-100 text-red-600'
-                                    }`}>
-                              {item.status ? 'Đã hoàn thành' : 'Chưa hoàn thành'}
-                            </span>
-                                </div>
-
-                                <Button
-                                    onClick={()=>onChangeStatus(item)}
-                                    className={`h-8 px-3 ${
-                                        item.status
-                                            ? 'bg-gray-100 text-gray-700 hover:bg-gray-400 hover:text-gray-200'
-                                            : 'bg-green-100 text-green-700 hover:bg-green-200'
-                                    }`}
-                                >
-                                    {item.status ? 'Đánh dấu chưa hoàn thành' : 'Đánh dấu đã hoàn thành'}
-                                </Button>
-                            </div>
+                        <div className="flex gap-2 w-full md:w-auto">
+                            <Button
+                                onClick={() => dispatch(openEditModal(null))}
+                                className="bg-green-600 hover:bg-green-700 flex-1 md:flex-none"
+                            >
+                                + Thêm mới
+                            </Button>
+                            <Button
+                                onClick={() => dispatch(clearAll())}
+                                variant="destructive"
+                                className="flex-1 md:flex-none"
+                                disabled={list.length === 0}
+                            >
+                                Xóa tất cả
+                            </Button>
                         </div>
                     </div>
-                )}
-            <ModalTodolist
-                open={openDialog}
-                item={itemSelected}
-                onClose={closeModal}
-                onSave={onUpdate}
-            />
+                    <div className="space-y-4">
+                        {filteredTodoList.length === 0 ? (
+                            <div className="text-center py-12 border-2 border-dashed border-gray-200 rounded-xl">
+                                <div className="text-gray-400 mb-4">
+                                    <Search className="h-12 w-12 mx-auto opacity-50" />
+                                </div>
+                                <p className="text-gray-500 text-lg font-medium">
+                                    {searchText ? 'Không tìm thấy kết quả phù hợp' : 'Danh sách công việc trống'}
+                                </p>
+                            </div>
+                        ) : (
+                            filteredTodoList.map((item, idx: number) => (
+                                <div
+                                    key={item.id}
+                                    className={`border rounded-xl p-5 transition-all duration-200 hover:shadow-md ${
+                                        item.status
+                                            ? 'bg-green-50 border-green-200'
+                                            : 'bg-white border-gray-200'
+                                    }`}
+                                >
+                                    <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-3 mb-2">
+                                                <span className="text-sm font-medium text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                                                    #{idx + 1}
+                                                </span>
+                                                <span className={`text-xs font-medium px-3 py-1 rounded-full ${
+                                                    item.status
+                                                        ? 'bg-green-100 text-green-800'
+                                                        : 'bg-yellow-100 text-yellow-800'
+                                                }`}>
+                                                    {item.status ? 'Đã hoàn thành' : 'Đang thực hiện'}
+                                                </span>
+                                            </div>
+
+                                            <h3 className={`text-lg font-semibold mb-2 ${
+                                                item.status ? 'text-gray-500 line-through' : 'text-gray-800'
+                                            }`}>
+                                                {item.title}
+                                            </h3>
+
+                                            <div className="mt-3">
+                                                <p className="text-gray-600 text-sm font-medium mb-1">Nội dung:</p>
+                                                <p className="text-gray-700 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                                    {item.content || "Không có mô tả"}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {/* Action Buttons */}
+                                        <div className="flex flex-col sm:flex-row md:flex-col gap-2 min-w-[180px]">
+                                            <Button
+                                                onClick={() => dispatch(toggleStatus(item.id))}
+                                                variant={item.status ? "outline" : "default"}
+                                                className={`w-full ${
+                                                    item.status
+                                                        ? 'border-gray-300 text-gray-700 hover:bg-gray-100'
+                                                        : 'bg-blue-600 hover:bg-blue-700'
+                                                }`}
+                                            >
+                                                {item.status ? 'Đánh dấu chưa hoàn thành' : 'Đánh dấu đã hoàn thành'}
+                                            </Button>
+
+                                            <div className="flex gap-2">
+                                                <Button
+                                                    onClick={() => dispatch(openEditModal(item))}
+                                                    variant="outline"
+                                                    className="flex-1 border-blue-300 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+                                                >
+                                                    Sửa
+                                                </Button>
+                                                <Button
+                                                    onClick={() => dispatch(removeTodo(item.id))}
+                                                    variant="outline"
+                                                    className="flex-1 border-red-300 text-red-600 hover:bg-red-50 hover:text-red-700"
+                                                >
+                                                    Xóa
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </div>
+
+                {/* Modal */}
+                <ModalTodolist
+                    open={isModalOpen}
+                    item={selectedItem}
+                    onClose={() => dispatch(closeModal())}
+                    onSave={handleSave}
+                />
+            </div>
         </div>
-    )
+    );
 };
+
 export default TodoListPage;
